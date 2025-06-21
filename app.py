@@ -10,8 +10,12 @@ uploaded_file = st.file_uploader("อัปโหลดไฟล์ Excel (.xls 
 
 if uploaded_file:
     try:
-        # อ่านไฟล์ Excel ทั้ง .xls และ .xlsx โดย pandas จะเลือก engine อัตโนมัติ
+        # อ่าน Excel โดยใช้แถวที่ 4 เป็นหัวตาราง
         df = pd.read_excel(uploaded_file, header=3)
+
+        # กรองเฉพาะ column ที่ 9 == 'Onsite' และ column ที่ 17 == 'เชียงใหม่'
+        df = df[(df.iloc[:, 8] == 'Onsite') & (df.iloc[:, 16] == 'เชียงใหม่')]
+
         
         st.success("✅ อัปโหลดไฟล์เรียบร้อยแล้ว!")
         st.subheader("ข้อมูลทั้งหมด:")
