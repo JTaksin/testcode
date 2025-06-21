@@ -13,22 +13,21 @@ if uploaded_file:
         # อ่าน Excel โดยใช้แถวที่ 4 เป็นหัวตาราง
         df = pd.read_excel(uploaded_file, header=3)
 
-        # เงื่อนไข: ไม่เอาค่าเหล่านี้ใน column 9
+        # ⛔ ถ้าเพิ่มโค้ดตรงนี้ ต้องอยู่ใน try block
         exclude_status = ["Complete", "Incomplete", "MIS Complete", "MIS Incomplete"]
-
-        # เงื่อนไข: จังหวัดที่ต้องการใน column 17
         selected_provinces = [
-        "ชัยนาท", "นครสวรรค์", "ตาก", "เชียงใหม่", "ลำปาง", "เชียงราย", "กำแพงเพชร", "พิษณุโลก",
-        "น่าน", "ลำพูน", "พิจิตร", "อุตรดิตถ์", "สุโขทัย", "เพชรบูรณ์", "พะเยา", "แม่ฮ่องสอน",
-        "แพร่", "อุทัยธานี"
+            "ชัยนาท", "นครสวรรค์", "ตาก", "เชียงใหม่", "ลำปาง", "เชียงราย", "กำแพงเพชร", "พิษณุโลก",
+            "น่าน", "ลำพูน", "พิจิตร", "อุตรดิตถ์", "สุโขทัย", "เพชรบูรณ์", "พะเยา", "แม่ฮ่องสอน",
+            "แพร่", "อุทัยธานี"
         ]
 
-# กรอง: column 9 (index 8) ไม่อยู่ใน exclude_status
-# และ column 17 (index 16) ต้องอยู่ใน selected_provinces
-df = df[~df.iloc[:, 8].isin(exclude_status) & df.iloc[:, 16].isin(selected_provinces)]
+        df = df[~df.iloc[:, 8].isin(exclude_status) & df.iloc[:, 16].isin(selected_provinces)]
 
+        # ... (โค้ดส่วนอื่น เช่น st.success, แสดงข้อมูล ฯลฯ)
 
-        
+    except Exception as e:
+        st.error(f"เกิดข้อผิดพลาด: {e}")
+    
         st.success("✅ อัปโหลดไฟล์เรียบร้อยแล้ว!")
         st.subheader("ข้อมูลทั้งหมด:")
         st.dataframe(df, use_container_width=True)
