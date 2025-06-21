@@ -58,14 +58,22 @@ if uploaded_file:
         st.subheader("📋 ข้อมูลหลังกรองทั้งหมด:")
         st.dataframe(filtered_df, use_container_width=True)
 
-        # Optional: Download
-        csv = filtered_df.to_csv(index=False).encode("utf-8-sig")
-        st.download_button(
-            label="📥 ดาวน์โหลดข้อมูลกรองเป็น CSV",
-            data=csv,
-            file_name="filtered_multi_data.csv",
-            mime="text/csv"
-        )
+        import io
+
+# แปลง filtered_df เป็นไฟล์ Excel
+output = io.BytesIO()
+with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
+    writer.save()
+    processed_data = output.getvalue()
+
+# ปุ่มดาวน์โหลดไฟล์ Excel
+st.download_button(
+    label="📥 ดาวน์โหลดข้อมูลกรองเป็น Excel",
+    data=processed_data,
+    file_name="filtered_multi_data.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
 
     except Exception as e:
         st.error(f"เกิดข้อผิดพลาด: {e}")
