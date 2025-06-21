@@ -24,10 +24,9 @@ if uploaded_file:
         df = df[~df.iloc[:, 8].isin(exclude_status) & df.iloc[:, 16].isin(selected_provinces)]
     
         st.success("✅ อัปโหลดไฟล์เรียบร้อยแล้ว!")
-        st.subheader("ข้อมูลทั้งหมด:")
         st.dataframe(df, use_container_width=True)
 
-        st.subheader("🔎 ตั้งค่าการกรองหลายคอลัมน์")
+        st.subheader("🔎 ตั้งค่าการกรอง")
 
         filtered_df = df.copy()
 
@@ -35,7 +34,7 @@ if uploaded_file:
         filter_columns = [df.columns[i] for i in [3, 6, 8, 16]]
 
         for column in filter_columns:
-            with st.expander(f"กรองคอลัมน์: {column}"):
+            with st.expander(f"กรอง: {column}"):
                 if pd.api.types.is_numeric_dtype(df[column]):
                     min_val = float(df[column].min())
                     max_val = float(df[column].max())
