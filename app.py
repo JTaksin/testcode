@@ -23,10 +23,12 @@ if uploaded_file:
 
         st.subheader("🔎 ตั้งค่าการกรองหลายคอลัมน์")
 
-        filter_conditions = {}
         filtered_df = df.copy()
 
-        for column in df.columns:
+        # เลือกเฉพาะ column 4, 7, 9, 11 โดยอิงจาก index
+        filter_columns = [df.columns[i] for i in [3, 6, 8, 10]]
+
+        for column in filter_columns:
             with st.expander(f"กรองคอลัมน์: {column}"):
                 if pd.api.types.is_numeric_dtype(df[column]):
                     min_val = float(df[column].min())
