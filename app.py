@@ -13,8 +13,20 @@ if uploaded_file:
         # อ่าน Excel โดยใช้แถวที่ 4 เป็นหัวตาราง
         df = pd.read_excel(uploaded_file, header=3)
 
-        # กรองเฉพาะ column ที่ 9 == 'Onsite' และ column ที่ 17 == 'เชียงใหม่'
-        df = df[(df.iloc[:, 8] == 'Onsite') & (df.iloc[:, 16] == 'เชียงใหม่')]
+        # เงื่อนไข: ไม่เอาค่าเหล่านี้ใน column 9
+        exclude_status = ["Complete", "Incomplete", "MIS Complete", "MIS Incomplete"]
+
+        # เงื่อนไข: จังหวัดที่ต้องการใน column 17
+        selected_provinces = [
+        "ชัยนาท", "นครสวรรค์", "ตาก", "เชียงใหม่", "ลำปาง", "เชียงราย", "กำแพงเพชร", "พิษณุโลก",
+        "น่าน", "ลำพูน", "พิจิตร", "อุตรดิตถ์", "สุโขทัย", "เพชรบูรณ์", "พะเยา", "แม่ฮ่องสอน",
+        "แพร่", "อุทัยธานี"
+        ]
+
+# กรอง: column 9 (index 8) ไม่อยู่ใน exclude_status
+# และ column 17 (index 16) ต้องอยู่ใน selected_provinces
+df = df[~df.iloc[:, 8].isin(exclude_status) & df.iloc[:, 16].isin(selected_provinces)]
+
 
         
         st.success("✅ อัปโหลดไฟล์เรียบร้อยแล้ว!")
