@@ -55,7 +55,7 @@ if uploaded_file:
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
-            writer.save()
+            # writer.save()
             processed_data = output.getvalue()
 
         st.download_button(
