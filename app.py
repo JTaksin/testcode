@@ -11,7 +11,7 @@ uploaded_file = st.file_uploader("อัปโหลดไฟล์ Excel (.xls 
 if uploaded_file:
     try:
         # อ่านไฟล์ Excel ทั้ง .xls และ .xlsx โดย pandas จะเลือก engine อัตโนมัติ
-        df = pd.read_excel(uploaded_file)
+        df = pd.read_excel(uploaded_file, header=3)
         
         st.success("✅ อัปโหลดไฟล์เรียบร้อยแล้ว!")
         st.subheader("ข้อมูลทั้งหมด:")
