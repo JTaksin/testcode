@@ -65,7 +65,6 @@ st.download_button(
     data=processed_data,
     file_name="filtered_multi_data.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
 
     except Exception as e:
         st.error(f"❌ เกิดข้อผิดพลาด: {e}")
