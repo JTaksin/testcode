@@ -59,11 +59,11 @@ if uploaded_file:
             output.seek(0)
         
         # สร้างปุ่มดาวน์โหลด
-st.download_button(
-    label="📥 ดาวน์โหลดข้อมูลกรองเป็น Excel",
-    data=output,
-    file_name="filtered_multi_data.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        st.download_button(
+        label="📥 ดาวน์โหลดข้อมูลกรองเป็น Excel",
+        data=output,
+        file_name="filtered_multi_data.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
     except Exception as e:
