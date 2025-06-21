@@ -25,8 +25,8 @@ if uploaded_file:
 
         filtered_df = df.copy()
 
-        # เลือกเฉพาะ column 4, 7, 9, 11 โดยอิงจาก index
-        filter_columns = [df.columns[i] for i in [3, 6, 8, 10]]
+        # เลือกเฉพาะ column 4, 7, 9, 16 โดยอิงจาก index
+        filter_columns = [df.columns[i] for i in [3, 6, 8, 16]]
 
         for column in filter_columns:
             with st.expander(f"กรองคอลัมน์: {column}"):
