@@ -24,7 +24,9 @@ if uploaded_file:
         df = df[~df.iloc[:, 8].isin(exclude_status) & df.iloc[:, 16].isin(selected_provinces)]
     
         st.success("✅ อัปโหลดไฟล์เรียบร้อยแล้ว!")
-        st.dataframe(df, use_container_width=True)
+        # ลบหรือคอมเมนต์สองบรรทัดนี้
+        # st.subheader("ข้อมูลทั้งหมด:")
+        # st.dataframe(df, use_container_width=True)
 
         st.subheader("🔎 ตั้งค่าการกรอง")
 
