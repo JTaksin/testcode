@@ -4,3 +4,4 @@ xlrd
 openpyxl
 numpy
 matplotlib
+xlsxwriter
