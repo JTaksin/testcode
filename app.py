@@ -22,11 +22,6 @@ if uploaded_file:
         ]
 
         df = df[~df.iloc[:, 8].isin(exclude_status) & df.iloc[:, 16].isin(selected_provinces)]
-
-        # ... (โค้ดส่วนอื่น เช่น st.success, แสดงข้อมูล ฯลฯ)
-
-    except Exception as e:
-        st.error(f"เกิดข้อผิดพลาด: {e}")
     
         st.success("✅ อัปโหลดไฟล์เรียบร้อยแล้ว!")
         st.subheader("ข้อมูลทั้งหมด:")
