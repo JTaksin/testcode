@@ -51,20 +51,20 @@ if uploaded_file:
         st.dataframe(filtered_df, use_container_width=True)
 
         # 🔽 ดาวน์โหลดเป็น Excel
-import io
-
-output = io.BytesIO()
-with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-    filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
-    # ไม่ต้องใส่ writer.save()
-
-processed_data = output.getvalue()
-
+        import io
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
+            # 🔁 reset pointer ก่อนโหลด
+            output.seek(0)
+        
+        # สร้างปุ่มดาวน์โหลด
 st.download_button(
     label="📥 ดาวน์โหลดข้อมูลกรองเป็น Excel",
-    data=processed_data,
+    data=output,
     file_name="filtered_multi_data.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
 
     except Exception as e:
         st.error(f"❌ เกิดข้อผิดพลาด: {e}")
