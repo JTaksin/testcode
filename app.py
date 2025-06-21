@@ -56,18 +56,17 @@ if uploaded_file:
                         filtered_df = filtered_df[df[column].astype(str).isin(selected_vals)]
 
         st.subheader("📋 ข้อมูลหลังกรองทั้งหมด:")
-        st.dataframe(filtered_df, use_container_width=True)
+# ... หลังจากกรองข้อมูลแล้ว
+st.dataframe(filtered_df, use_container_width=True)
 
-        import io
-
-# แปลง filtered_df เป็นไฟล์ Excel
+# สร้างและดาวน์โหลด Excel
+import io
 output = io.BytesIO()
 with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
     filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
     writer.save()
     processed_data = output.getvalue()
 
-# ปุ่มดาวน์โหลดไฟล์ Excel
 st.download_button(
     label="📥 ดาวน์โหลดข้อมูลกรองเป็น Excel",
     data=processed_data,
