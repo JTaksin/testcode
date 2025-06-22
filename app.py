@@ -55,17 +55,11 @@ if uploaded_file:
         # ✅ แสดงผลและดาวน์โหลด
         st.subheader("📋 ข้อมูลหลังกรองทั้งหมด:")
         st.dataframe(filtered_df, use_container_width=True)
+        st.subheader("📈 กราฟจำนวนรายการตาม Plan Date")
 
-        # 🔽 ดาวน์โหลดเป็น Excel
-        import io
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
-            # 🔁 reset pointer ก่อนโหลด
-            output.seek(0)
-        # ตรวจสอบว่ามี Plan Date จริง และเป็นวันที่
-        if 'Plan Date' in filtered_df.columns:
-        try:
+# ตรวจสอบว่ามี Plan Date จริง และเป็นวันที่
+if 'Plan Date' in filtered_df.columns:
+    try:
         # แปลงเป็นวันที่ (ถ้ายังไม่ใช่ datetime)
         filtered_df['Plan Date'] = pd.to_datetime(filtered_df['Plan Date'], errors='coerce')
 
@@ -86,6 +80,17 @@ if uploaded_file:
         )
 
         st.altair_chart(chart, use_container_width=True)
+
+    except Exception as e:
+        st.warning(f"ไม่สามารถสร้างกราฟได้: {e}")
+
+        # 🔽 ดาวน์โหลดเป็น Excel
+        import io
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
+            # 🔁 reset pointer ก่อนโหลด
+            output.seek(0)
         
         # สร้างปุ่มดาวน์โหลด
         st.download_button(
@@ -93,7 +98,7 @@ if uploaded_file:
         data=output,
         file_name="filtered_multi_data.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+)
 
     except Exception as e:
         st.error(f"❌ เกิดข้อผิดพลาด: {e}")
