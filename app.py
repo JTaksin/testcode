@@ -7,6 +7,11 @@ st.title("📊 Excel Multi-Filter Web App")
 
 # อัปโหลดไฟล์ Excel
 uploaded_file = st.file_uploader("อัปโหลดไฟล์ Excel (.xls หรือ .xlsx)", type=["xls", "xlsx"])
+# 🔗 เพิ่มลิงก์ใต้ uploader
+st.markdown(
+    '<a href="https://misweb.emc-kepler.com/modules/mis/report_plandate.php" target="_blank">🔗 เปิดรายงาน Plan Date แบบออนไลน์</a>',
+    unsafe_allow_html=True
+)
 
 if uploaded_file:
     try:
