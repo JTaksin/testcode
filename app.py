@@ -1,26 +1,27 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import io
 
 # ตั้งค่าหน้าของ Streamlit
 st.set_page_config(page_title="Excel Multi-Filter App", layout="wide")
 st.title("📊 Excel Multi-Filter Web App")
 
-# 🔗 เพิ่มลิงก์ใต้ uploader
+# 🔗 ลิงก์รายงาน
 st.markdown(
     '<a href="https://misweb.emc-kepler.com/modules/mis/report_plandate.php" target="_blank">🔗 เปิดรายงาน Plan Date แบบออนไลน์</a>',
     unsafe_allow_html=True
 )
-# อัปโหลดไฟล์ Excel
+
+# 📁 อัปโหลดไฟล์
 uploaded_file = st.file_uploader("อัปโหลดไฟล์ Excel (.xls หรือ .xlsx)", type=["xls", "xlsx"])
 
 if uploaded_file:
     try:
-        # ✅ โหลดไฟล์
+        # ✅ โหลดไฟล์ Excel โดยใช้แถวที่ 4 เป็น header
         df = pd.read_excel(uploaded_file, header=3)
 
-        # ✅ กรองข้อมูล
-        # (ตามเงื่อนไข Onsite / จังหวัด)
+        # ✅ กรองข้อมูลเบื้องต้น
         exclude_status = ["Complete", "Incomplete", "MIS Complete", "MIS Incomplete"]
         selected_provinces = [
             "ชัยนาท", "นครสวรรค์", "ตาก", "เชียงใหม่", "ลำปาง", "เชียงราย", "กำแพงเพชร", "พิษณุโลก",
@@ -29,10 +30,9 @@ if uploaded_file:
         ]
         df = df[~df.iloc[:, 8].isin(exclude_status) & df.iloc[:, 16].isin(selected_provinces)]
 
-        # ✅ ส่วนกรองหลายคอลัมน์
+        # ✅ กรองหลายคอลัมน์
         st.subheader("🔎 ตั้งค่าการกรอง")
         filtered_df = df.copy()
-
         filter_columns = ['Project', 'Plan Date', 'Status', 'Province']
         for column in filter_columns:
             with st.expander(f"กรอง: {column}"):
@@ -50,55 +50,41 @@ if uploaded_file:
                     unique_vals = df[column].dropna().astype(str).unique()
                     selected_vals = st.multiselect(f"{column} - เลือกค่าที่ต้องการ", sorted(unique_vals))
                     if selected_vals:
-                        filtered_df = filtered_df[df[column].astype(str).isin(selected_vals)]
+                        filtered_df = filtered_df[filtered_df[column].astype(str).isin(selected_vals)]
 
-        # ✅ แสดงผลและดาวน์โหลด
+        # ✅ แสดงข้อมูล
         st.subheader("📋 ข้อมูลหลังกรองทั้งหมด:")
         st.dataframe(filtered_df, use_container_width=True)
+
+        # ✅ แสดงกราฟ Plan Date
         st.subheader("📈 กราฟจำนวนรายการตาม Plan Date")
+        if 'Plan Date' in filtered_df.columns:
+            filtered_df['Plan Date'] = pd.to_datetime(filtered_df['Plan Date'], errors='coerce')
+            plot_df = filtered_df.dropna(subset=['Plan Date'])
+            count_by_date = plot_df.groupby(plot_df['Plan Date'].dt.date).size().reset_index(name='จำนวนรายการ')
 
-# ตรวจสอบว่ามี Plan Date จริง และเป็นวันที่
-if 'Plan Date' in filtered_df.columns:
-    try:
-        # แปลงเป็นวันที่ (ถ้ายังไม่ใช่ datetime)
-        filtered_df['Plan Date'] = pd.to_datetime(filtered_df['Plan Date'], errors='coerce')
+            chart = alt.Chart(count_by_date).mark_bar().encode(
+                x=alt.X('Plan Date:T', title='Plan Date'),
+                y=alt.Y('จำนวนรายการ:Q', title='จำนวนแถว'),
+                tooltip=['Plan Date', 'จำนวนรายการ']
+            ).properties(
+                title='📊 จำนวนแถวตาม Plan Date',
+                width='container'
+            )
 
-        # ลบค่าที่ไม่ใช่วันที่จริง
-        plot_df = filtered_df.dropna(subset=['Plan Date'])
+            st.altair_chart(chart, use_container_width=True)
 
-        # จับกลุ่มตามวัน และนับจำนวน
-        count_by_date = plot_df.groupby(plot_df['Plan Date'].dt.date).size().reset_index(name='จำนวนรายการ')
-
-        # สร้างกราฟแท่ง
-        chart = alt.Chart(count_by_date).mark_bar().encode(
-            x=alt.X('Plan Date:T', title='Plan Date'),
-            y=alt.Y('จำนวนรายการ:Q', title='จำนวนแถว'),
-            tooltip=['Plan Date', 'จำนวนรายการ']
-        ).properties(
-            title='📊 จำนวนแถวตาม Plan Date',
-            width='container'
-        )
-
-        st.altair_chart(chart, use_container_width=True)
-
-    except Exception as e:
-        st.warning(f"ไม่สามารถสร้างกราฟได้: {e}")
-
-        # 🔽 ดาวน์โหลดเป็น Excel
-        import io
+        # ✅ ปุ่มดาวน์โหลด Excel
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
-            # 🔁 reset pointer ก่อนโหลด
-            output.seek(0)
-        
-        # สร้างปุ่มดาวน์โหลด
+        output.seek(0)
         st.download_button(
-        label="📥 ดาวน์โหลดข้อมูลกรองเป็น Excel",
-        data=output,
-        file_name="filtered_multi_data.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
+            label="📥 ดาวน์โหลดข้อมูลกรองเป็น Excel",
+            data=output,
+            file_name="filtered_multi_data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
     except Exception as e:
         st.error(f"❌ เกิดข้อผิดพลาด: {e}")
