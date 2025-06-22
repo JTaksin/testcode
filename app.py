@@ -64,8 +64,8 @@ if uploaded_file:
             # 🔁 reset pointer ก่อนโหลด
             output.seek(0)
         # ตรวจสอบว่ามี Plan Date จริง และเป็นวันที่
-if 'Plan Date' in filtered_df.columns:
-    try:
+        if 'Plan Date' in filtered_df.columns:
+        try:
         # แปลงเป็นวันที่ (ถ้ายังไม่ใช่ datetime)
         filtered_df['Plan Date'] = pd.to_datetime(filtered_df['Plan Date'], errors='coerce')
 
