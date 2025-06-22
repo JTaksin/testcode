@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 
 # ตั้งค่าหน้าของ Streamlit
 st.set_page_config(page_title="Excel Multi-Filter App", layout="wide")
@@ -62,6 +63,29 @@ if uploaded_file:
             filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
             # 🔁 reset pointer ก่อนโหลด
             output.seek(0)
+        # ตรวจสอบว่ามี Plan Date จริง และเป็นวันที่
+if 'Plan Date' in filtered_df.columns:
+    try:
+        # แปลงเป็นวันที่ (ถ้ายังไม่ใช่ datetime)
+        filtered_df['Plan Date'] = pd.to_datetime(filtered_df['Plan Date'], errors='coerce')
+
+        # ลบค่าที่ไม่ใช่วันที่จริง
+        plot_df = filtered_df.dropna(subset=['Plan Date'])
+
+        # จับกลุ่มตามวัน และนับจำนวน
+        count_by_date = plot_df.groupby(plot_df['Plan Date'].dt.date).size().reset_index(name='จำนวนรายการ')
+
+        # สร้างกราฟแท่ง
+        chart = alt.Chart(count_by_date).mark_bar().encode(
+            x=alt.X('Plan Date:T', title='Plan Date'),
+            y=alt.Y('จำนวนรายการ:Q', title='จำนวนแถว'),
+            tooltip=['Plan Date', 'จำนวนรายการ']
+        ).properties(
+            title='📊 จำนวนแถวตาม Plan Date',
+            width='container'
+        )
+
+        st.altair_chart(chart, use_container_width=True)
         
         # สร้างปุ่มดาวน์โหลด
         st.download_button(
