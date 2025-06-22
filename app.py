@@ -27,7 +27,7 @@ if uploaded_file:
         st.subheader("🔎 ตั้งค่าการกรอง")
         filtered_df = df.copy()
 
-        filter_columns = [df.columns[i] for i in [3, 6, 8, 16]]
+        filter_columns = ['Project', 'Plan Date', 'Status', 'Province']
         for column in filter_columns:
             with st.expander(f"กรอง: {column}"):
                 if pd.api.types.is_numeric_dtype(df[column]):
