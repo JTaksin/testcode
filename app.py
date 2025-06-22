@@ -7,13 +7,13 @@ import io
 st.set_page_config(page_title="Excel Multi-Filter App", layout="wide")
 st.title("📊 Excel Multi-Filter Web App")
 
-# 🔗 ลิงก์รายงาน
+# 🔗 ลิงก์รายงาน Plan Date
 st.markdown(
     '<a href="https://misweb.emc-kepler.com/modules/mis/report_plandate.php" target="_blank">🔗 เปิดรายงาน Plan Date แบบออนไลน์</a>',
     unsafe_allow_html=True
 )
 
-# 📁 อัปโหลดไฟล์
+# 📁 อัปโหลดไฟล์ Excel
 uploaded_file = st.file_uploader("อัปโหลดไฟล์ Excel (.xls หรือ .xlsx)", type=["xls", "xlsx"])
 
 if uploaded_file:
@@ -21,7 +21,7 @@ if uploaded_file:
         # ✅ โหลดไฟล์ Excel โดยใช้แถวที่ 4 เป็น header
         df = pd.read_excel(uploaded_file, header=3)
 
-        # ✅ กรองข้อมูลเบื้องต้น
+        # ✅ กรองเฉพาะ Onsite และจังหวัดภาคเหนือ
         exclude_status = ["Complete", "Incomplete", "MIS Complete", "MIS Incomplete"]
         selected_provinces = [
             "ชัยนาท", "นครสวรรค์", "ตาก", "เชียงใหม่", "ลำปาง", "เชียงราย", "กำแพงเพชร", "พิษณุโลก",
@@ -30,10 +30,16 @@ if uploaded_file:
         ]
         df = df[~df.iloc[:, 8].isin(exclude_status) & df.iloc[:, 16].isin(selected_provinces)]
 
-        # ✅ กรองหลายคอลัมน์
+        # ✅ ตั้งค่าการกรอง
         st.subheader("🔎 ตั้งค่าการกรอง")
         filtered_df = df.copy()
+
+        # ระบุคอลัมน์ที่ต้องการให้กรอง
         filter_columns = ['Project', 'Plan Date', 'Status', 'Province']
+
+        # ตัวแปรเก็บช่วงวันที่ Plan Date
+        selected_plan_date_range = None
+
         for column in filter_columns:
             with st.expander(f"กรอง: {column}"):
                 if pd.api.types.is_numeric_dtype(df[column]):
@@ -41,44 +47,57 @@ if uploaded_file:
                     max_val = float(df[column].max())
                     selected_range = st.slider(f"{column} - เลือกช่วงตัวเลข", min_val, max_val, (min_val, max_val))
                     filtered_df = filtered_df[filtered_df[column].between(*selected_range)]
+
                 elif pd.api.types.is_datetime64_any_dtype(df[column]):
                     date_range = st.date_input(f"{column} - เลือกช่วงวันที่", [])
                     if len(date_range) == 2:
                         start_date, end_date = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
+                        selected_plan_date_range = (start_date, end_date)  # 👉 เก็บไว้ใช้ในกราฟ
                         filtered_df = filtered_df[(df[column] >= start_date) & (df[column] <= end_date)]
+
                 else:
                     unique_vals = df[column].dropna().astype(str).unique()
                     selected_vals = st.multiselect(f"{column} - เลือกค่าที่ต้องการ", sorted(unique_vals))
                     if selected_vals:
-                        filtered_df = filtered_df[filtered_df[column].astype(str).isin(selected_vals)]
+                        filtered_df = filtered_df[df[column].astype(str).isin(selected_vals)]
 
-        # ✅ แสดงข้อมูล
+        # ✅ แสดงข้อมูลที่กรองแล้ว
         st.subheader("📋 ข้อมูลหลังกรองทั้งหมด:")
         st.dataframe(filtered_df, use_container_width=True)
 
-        # ✅ แสดงกราฟ Plan Date
-        st.subheader("📈 กราฟจำนวนรายการตาม Plan Date")
+        # ✅ กราฟ Plan Date (ตามช่วงที่ผู้ใช้เลือก)
+        st.subheader("📈 กราฟจำนวนรายการตาม Plan Date (ช่วงที่เลือก)")
+
         if 'Plan Date' in filtered_df.columns:
             filtered_df['Plan Date'] = pd.to_datetime(filtered_df['Plan Date'], errors='coerce')
             plot_df = filtered_df.dropna(subset=['Plan Date'])
+
+            # ใช้ช่วงที่ผู้ใช้เลือกกรองซ้ำในกราฟ (หากมี)
+            if selected_plan_date_range:
+                start_date, end_date = selected_plan_date_range
+                plot_df = plot_df[(plot_df['Plan Date'] >= start_date) & (plot_df['Plan Date'] <= end_date)]
+
             count_by_date = plot_df.groupby(plot_df['Plan Date'].dt.date).size().reset_index(name='จำนวนรายการ')
 
-            chart = alt.Chart(count_by_date).mark_bar().encode(
-                x=alt.X('Plan Date:T', title='Plan Date'),
-                y=alt.Y('จำนวนรายการ:Q', title='จำนวนแถว'),
-                tooltip=['Plan Date', 'จำนวนรายการ']
-            ).properties(
-                title='📊 จำนวนแถวตาม Plan Date',
-                width='container'
-            )
+            if not count_by_date.empty:
+                chart = alt.Chart(count_by_date).mark_bar().encode(
+                    x=alt.X('Plan Date:T', title='Plan Date'),
+                    y=alt.Y('จำนวนรายการ:Q', title='จำนวนงาน'),
+                    tooltip=['Plan Date', 'จำนวนรายการ']
+                ).properties(
+                    title='📊 จำนวนงานต่อวัน (Plan Date)',
+                    width='container'
+                )
+                st.altair_chart(chart, use_container_width=True)
+            else:
+                st.info("ไม่มีข้อมูลในช่วงวันที่ที่เลือก")
 
-            st.altair_chart(chart, use_container_width=True)
-
-        # ✅ ปุ่มดาวน์โหลด Excel
+        # ✅ ดาวน์โหลด Excel ที่กรองแล้ว
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
             filtered_df.to_excel(writer, index=False, sheet_name='FilteredData')
         output.seek(0)
+
         st.download_button(
             label="📥 ดาวน์โหลดข้อมูลกรองเป็น Excel",
             data=output,
