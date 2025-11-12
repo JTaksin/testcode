@@ -7,7 +7,7 @@ st.title("📊 Excel Multi-Filter Web App")
 
 # 🔗 เพิ่มลิงก์ใต้ uploader
 st.markdown(
-    '<a href="https://misweb.emc-kepler.com/modules/mis/report_plandate.php" target="_blank">🔗 เปิดรายงาน Plan Date แบบออนไลน์</a>',
+    '<a href="http://192.168.0.50/modules/mis/report_plandate.php" target="_blank">🔗 เปิดรายงาน Plan Date แบบออนไลน์</a>',
     unsafe_allow_html=True
 )
 # อัปโหลดไฟล์ Excel
@@ -73,3 +73,4 @@ if uploaded_file:
 
     except Exception as e:
         st.error(f"❌ เกิดข้อผิดพลาด: {e}")
+
