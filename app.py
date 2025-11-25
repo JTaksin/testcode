@@ -124,7 +124,11 @@ if app_mode == "📊 กรองข้อมูล (Multi-Filter)":
 # ==========================================
 elif app_mode == "🛠️ แก้ภาษาต่างด้าว (Fix Encoding)":
     st.title("🛠️ โปรแกรมแก้ภาษาต่างด้าว")
-    st.info("ใช้สำหรับไฟล์ Excel/CSV ที่เปิดแล้วเป็นภาษาอ่านไม่ออก (เช่น `§Ò¹·ÕèÊè§`)")
+    st.info("ใช้สำหรับไฟล์ Excel/CSV ที่เปิดแล้วเป็นภาษาอ่านไม่ออก (เช่น `§Ò¹·ÕèÊè§`)")# 🔗 เพิ่มลิงก์
+    st.markdown(
+        '<a href="http://192.168.0.50/modules/mis/report_outsource.php" style="text-decoration: none;">🔗 เปิด Outsource to excel</a>',
+        unsafe_allow_html=True
+    )
 
     uploaded_file_fix = st.file_uploader("อัปโหลดไฟล์ที่ภาษาเพี้ยน (.csv, .xls, .xlsx)", type=['csv', 'xlsx', 'xls'], key="fix_uploader")
 
@@ -165,3 +169,4 @@ elif app_mode == "🛠️ แก้ภาษาต่างด้าว (Fix Enc
         except Exception as e:
             st.error(f"เกิดข้อผิดพลาด: {e}")
             st.warning("หากเป็นไฟล์ CSV ลอง Save As เป็น UTF-8 ก่อนนำเข้า หรือตรวจสอบรูปแบบไฟล์ต้นฉบับ")
+
